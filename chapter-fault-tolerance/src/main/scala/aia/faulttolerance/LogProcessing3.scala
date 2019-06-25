@@ -7,6 +7,9 @@ import akka.actor.OneForOneStrategy
 import scala.concurrent.duration._
 import language.postfixOps
 
+/**
+ * 将所有类抽象，工具类封装到 object中
+ */
 package dbstrategy3 {
 
   object LogProcessingApp extends App {
@@ -150,6 +153,8 @@ package dbstrategy3 {
     }
   }
 
+
+
   @SerialVersionUID(1L)
   class DiskError(msg: String)
     extends Error(msg) with Serializable
@@ -163,6 +168,7 @@ package dbstrategy3 {
     extends Exception(msg) with Serializable
 
 
+
   trait LogParsing {
     import LogProcessingProtocol._
     // Parses log files. creates line objects from the lines in the log file.
@@ -172,10 +178,6 @@ package dbstrategy3 {
       Vector.empty[Line]
     }
   }
-  object FileWatcherProtocol {
-    case class NewFile(file: File, timeAdded: Long)
-    case class SourceAbandoned(uri: String)
-  }
   trait FileWatchingAbilities {
     def register(uri: String): Unit = {
 
@@ -183,12 +185,15 @@ package dbstrategy3 {
   }
 
 
+
+  object FileWatcherProtocol {
+    case class NewFile(file: File, timeAdded: Long)
+    case class SourceAbandoned(uri: String)
+  }
   object LogProcessingProtocol {
     // represents a new log file
     case class LogFile(file: File)
     // A line in the log file parsed by the LogProcessor Actor
     case class Line(time: Long, message: String, messageType: String)
   }
-
-
 }
