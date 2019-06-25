@@ -5,9 +5,11 @@ import org.scalatest.MustMatchers
 import akka.testkit.{ TestActorRef, TestKit }
 import akka.actor._
 
-package silentactor02 {
 
-class SilentActorTest extends TestKit(ActorSystem("testsystem"))
+
+
+package silentactor02 {
+  class SilentActorTest extends TestKit(ActorSystem("testsystem"))
     with WordSpecLike
     with MustMatchers
     with StopSystemAfterAll {
@@ -21,10 +23,8 @@ class SilentActorTest extends TestKit(ActorSystem("testsystem"))
         silentActor ! SilentMessage("whisper")
         silentActor.underlyingActor.state must (contain("whisper"))
       }
-
     }
   }
-
 
   object SilentActor {
     case class SilentMessage(data: String)
@@ -44,8 +44,10 @@ class SilentActorTest extends TestKit(ActorSystem("testsystem"))
   }
 }
 
-package silentactor03 {
 
+
+
+package silentactor03 {
   class SilentActorTest extends TestKit(ActorSystem("testsystem"))
     with WordSpecLike
     with MustMatchers
@@ -64,10 +66,7 @@ package silentactor03 {
       }
 
     }
-
   }
-
-
 
   object SilentActor {
     case class SilentMessage(data: String)
@@ -81,8 +80,8 @@ package silentactor03 {
     def receive = {
       case SilentMessage(data) =>
         internalState = internalState :+ data
-      case GetState(receiver) => receiver ! internalState
+      case GetState(receiver) => 
+        receiver ! internalState
     }
   }
-
 }
