@@ -20,9 +20,20 @@ class Greeter02Test extends TestKit(ActorSystem("testsystem"))
     "say something else and see what happens" in {
       val props = Greeter02.props(Some(testActor))
       val greeter = system.actorOf(props, "greeter02-2")
+
       system.eventStream.subscribe(testActor, classOf[UnhandledMessage])
-      greeter ! "World"
-      expectMsg(UnhandledMessage("World", system.deadLetters, greeter))
+      
+      greeter ! "hello everybody"
+      expectMsg(UnhandledMessage("hello everybody", system.deadLetters, greeter))
+
+      greeter ! "hello everybody111"
+      expectMsg(UnhandledMessage("hello everybody111", system.deadLetters, greeter))
+
+      greeter ! "hello everybody222"
+      expectMsg(UnhandledMessage("hello everybody222", system.deadLetters, greeter))
+
+      greeter ! "hello everybody333"
+      expectMsg(UnhandledMessage("hello everybody333", system.deadLetters, greeter))
     }
   }
 }

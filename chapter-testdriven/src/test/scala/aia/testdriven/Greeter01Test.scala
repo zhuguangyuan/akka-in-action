@@ -16,9 +16,14 @@ class Greeter01Test extends TestKit(testSystem)
       val dispatcherId = CallingThreadDispatcher.Id
       val props = Props[Greeter].withDispatcher(dispatcherId)
       val greeter = system.actorOf(props)
-      EventFilter.info(message = "Hello World!",
+
+      EventFilter.info(message = "Hello brucezhu!",
         occurrences = 1).intercept {
-          greeter ! Greeting("World")
+          // 这里向 greeter 发送一个消息，"brucezhu"，greeter会问候，打印"Hello brucezhu!"
+          // TestEventListener 会记录这条打印
+          // EventFilter 会从中查找 Hello brucezhu! 的记录，若出现，则测试通过
+          greeter ! Greeting("brucezhu") 
+
         }
     }
   }
