@@ -1,7 +1,7 @@
 package aia.testdriven
 
 import org.scalatest.{WordSpecLike, MustMatchers}
-import akka.testkit.TestKit
+import akka.testkit.{TestActorRef,TestKit} //
 import akka.actor._
 
 //This test is ignored in the BookBuild, it's added to the defaultExcludedNames
@@ -14,12 +14,12 @@ class SilentActor01Test extends TestKit(ActorSystem("testsystem"))
   "A Silent Actor" must {
     "change state when it receives a message, single threaded" in {
       //Write the test, first fail
-      fail("not implemented yet")
-      // import SilentActor._
+      // fail("not implemented yet")
+      import SilentActor._
 
-      // val silentActor = TestActorRef[SilentActor] // 找不到 TestActorRef???
-      // silentActor ! SilentMessage("whisper")
-      // silentActor.underlyingActor.state must (contain("whisper"))
+      val silentActor = TestActorRef[SilentActor] // 找不到 TestActorRef??? // 没引入啊熊迪！
+      silentActor ! SilentMessage("whisper")
+      silentActor.underlyingActor.state must (contain("whisper"))
     }
     "change state when it receives a message, multi-threaded" in {
       //Write the test, first fail
