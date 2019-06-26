@@ -36,8 +36,12 @@ trait MockWebServiceCalls extends WebServiceCalls {
   def getEvent(ticketNr: String, location: Location): Future[TicketInfo] = {
       Future {
         if(ticketNr == "1234") {
-          TicketInfo(ticketNr, location, event = Some(Event("Quasimoto", Location(4.324218908d,53.12311144d), new DateTime(2013,10,1,22,30))))
-        } else throw new Exception("crap")
+          TicketInfo( ticketNr, 
+                      location, 
+                      event = Some(Event("Quasimoto", Location(4.324218908d,53.12311144d), new DateTime(2013,10,1,22,30))))
+        } else {
+          throw new Exception("crap")
+        }
       }
   }
 
