@@ -16,6 +16,8 @@ object FrontendMain extends App with FrontendStartup {
 
   val api = new RestApi() {
     val log = Logging(system.eventStream, "frontend")
+
+    // 提供父类 RestApi 声明的implicit变量
     implicit val requestTimeout = configuredRequestTimeout(config)
     implicit def executionContext = system.dispatcher
     
@@ -29,7 +31,7 @@ object FrontendMain extends App with FrontendStartup {
       s"$protocol://$systemName@$host:$port/$actorName"
     }
 
-    // 实现 RestApi中定义的方法
+    // 实现 RestApi中定义的方法，创建一个 RemoteLookupProxy 来和远端通信
     def createBoxOffice: ActorRef = {
       val path = createPath()
       system.actorOf(Props(new RemoteLookupProxy(path)), "lookupBoxOffice")

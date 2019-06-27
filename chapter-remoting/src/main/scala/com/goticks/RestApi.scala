@@ -100,8 +100,11 @@ trait BoxOfficeApi {
   // 定义创建 RemoteLookupProxy 的方法，具体实现在 FrontendMain中提供，因为要用到的配置信息它那里才有
   def createBoxOffice(): ActorRef
 
-  // $todo 为future提供异步执行环境，但是似乎我注释掉了 也没有啥影响啊？？？
+  // 为future提供异步执行环境，这里只是声明，具体的实现由子类提供
+  // 子类比如 FrontendMain/SingleNodeMain
   implicit def executionContext: ExecutionContext
+  // 声明超时时间，具体阈值由子类实现
+  // 子类比如 FrontendMain/SingleNodeMain
   implicit def requestTimeout: Timeout
 
   /**
