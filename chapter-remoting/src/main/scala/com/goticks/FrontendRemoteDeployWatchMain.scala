@@ -6,7 +6,7 @@ import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
 object FrontendRemoteDeployWatchMain extends App
-    with Startup {
+    with FrontendStartup {
   val config = ConfigFactory.load("frontend-remote-deploy") 
   implicit val system = ActorSystem("frontend", config) 
 

@@ -6,8 +6,10 @@ import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
 object SingleNodeMain extends App
-    with Startup {
+    with FrontendStartup {
+  // 配置信息
   val config = ConfigFactory.load("singlenode") 
+  // 注入Startup需要的actorSystem环境
   implicit val system = ActorSystem("singlenode", config) 
 
   val api = new RestApi() {
