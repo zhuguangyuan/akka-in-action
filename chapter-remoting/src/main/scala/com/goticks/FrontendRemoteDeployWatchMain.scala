@@ -12,8 +12,15 @@ object FrontendRemoteDeployWatchMain extends App
 
   val api = new RestApi() {
     val log = Logging(system.eventStream, "frontend-remote-watch")
+
     implicit val requestTimeout = configuredRequestTimeout(config)
     implicit def executionContext = system.dispatcher
+
+    /**
+      * 加入中间组件 RemoteBoxOfficeForwarder 监控远端actor失效的情况
+      * 重新获取actorRef并部署到远端
+      * @return
+      */
     def createBoxOffice: ActorRef = {
       system.actorOf(
         RemoteBoxOfficeForwarder.props, 

@@ -29,7 +29,6 @@ class RemoteBoxOfficeForwarder(implicit timeout: Timeout)
   def receive = deploying
 
   def deploying: Receive = {
-
     case ReceiveTimeout =>
       deployAndWatch()
 
