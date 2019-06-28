@@ -20,13 +20,14 @@ class PipeAndFilterTest
   }
 
   "The pipe and filter" must {
+    // 分别测试单个 filter
     "filter messages in configuration 1" in {
-
       val endProbe = TestProbe()
       val speedFilterRef = system.actorOf(
         Props(new SpeedFilter(50, endProbe.ref)))
       val licenseFilterRef = system.actorOf(
         Props(new LicenseFilter(speedFilterRef)))
+
       val msg = new Photo("123xyz", 60)
       licenseFilterRef ! msg
       endProbe.expectMsg(msg)
@@ -37,13 +38,15 @@ class PipeAndFilterTest
       licenseFilterRef ! new Photo("123xyz", 49)
       endProbe.expectNoMsg(timeout)
     }
-    "filter messages in configuration 2" in {
 
+    // 测试 串联filter
+    "filter messages in configuration 2" in {
       val endProbe = TestProbe()
       val licenseFilterRef = system.actorOf(
         Props(new LicenseFilter(endProbe.ref)))
       val speedFilterRef = system.actorOf(
         Props(new SpeedFilter(50, licenseFilterRef)))
+
       val msg = new Photo("123xyz", 60)
       speedFilterRef ! msg
       endProbe.expectMsg(msg)
