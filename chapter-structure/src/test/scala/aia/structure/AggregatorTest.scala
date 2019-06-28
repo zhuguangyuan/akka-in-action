@@ -52,6 +52,7 @@ class AggregatorTest
         Props(new Aggregator(timeout, endProbe.ref)))
       val photoStr = ImageProcessing.createPhotoString(
         new Date(), 60)
+
       val msg1 = PhotoMessage("id1",
         photoStr,
         Some(new Date()),
@@ -59,7 +60,6 @@ class AggregatorTest
       actorRef ! msg1
 
       endProbe.expectMsg(msg1)
-
     }
     "aggregate two messages when restarting" in {
 
@@ -74,7 +74,7 @@ class AggregatorTest
         None)
       actorRef ! msg1
 
-      actorRef ! new IllegalStateException("restart")
+      actorRef ! new IllegalStateException("restart") // 发送非法状态异常给 actorRef，让其重启
 
       val msg2 = PhotoMessage("id1",
         photoStr,
@@ -88,7 +88,6 @@ class AggregatorTest
         msg2.speed)
 
       endProbe.expectMsg(combinedMsg)
-
     }
   }
 }

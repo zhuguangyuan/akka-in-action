@@ -15,7 +15,6 @@ class RecipientListTest
 
   "The RecipientList" must {
     "scatter the message" in {
-
       val endProbe1 = TestProbe()
       val endProbe2 = TestProbe()
       val endProbe3 = TestProbe()
@@ -27,7 +26,6 @@ class RecipientListTest
       endProbe1.expectMsg(msg)
       endProbe2.expectMsg(msg)
       endProbe3.expectMsg(msg)
-
     }
   }
 }

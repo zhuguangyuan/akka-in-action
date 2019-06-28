@@ -46,8 +46,6 @@ class ScatterGatherTest
         Some(photoSpeed))
 
       endProbe.expectMsg(combinedMsg)
-
-
     }
   }
 }
