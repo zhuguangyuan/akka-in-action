@@ -3,7 +3,9 @@ package aia.routing
 import akka.actor.{ Props, ActorRef, Actor }
 import scala.collection.mutable.ListBuffer
 
-
+/**
+  * SlipRouter 可以根据 传入的order 消息的options选项 选择传递给不同的actor进行处理
+  */
 object CarOptions extends Enumeration {
   val CAR_COLOR_GRAY, NAVIGATION, PARKING_SENSORS = Value
 }
@@ -19,7 +21,6 @@ case class RouteSlipMessage(routeSlip: Seq[ActorRef],
                             message: AnyRef)
 
 trait RouteSlip {
-
   def sendMessageToNextTask(routeSlip: Seq[ActorRef],
                             message: AnyRef) {
     val nextTask = routeSlip.head
@@ -27,7 +28,6 @@ trait RouteSlip {
     if (newSlip.isEmpty) {
       nextTask ! message
     } else {
-
       nextTask ! RouteSlipMessage(
         routeSlip = newSlip,
         message = message)
@@ -79,27 +79,25 @@ class SlipRouter(endStep: ActorRef) extends Actor with RouteSlip {
   def receive = {
     case order: Order => {
       val routeSlip = createRouteSlip(order.options)
-
       sendMessageToNextTask(routeSlip, new Car)
     }
   }
 
   private def createRouteSlip(options: Seq[CarOptions.Value]):
       Seq[ActorRef] = {
-
-    val routeSlip = new ListBuffer[ActorRef]
-    //car needs a color
-    if (!options.contains(CarOptions.CAR_COLOR_GRAY)) {
-      routeSlip += paintBlack
-    }
-    options.foreach {
-      case CarOptions.CAR_COLOR_GRAY  => routeSlip += paintGray
-      case CarOptions.NAVIGATION      => routeSlip += addNavigation
-      case CarOptions.PARKING_SENSORS => routeSlip += addParkingSensor
-      case other                      => //do nothing
-    }
-    routeSlip += endStep
-    routeSlip
-  }
+        val routeSlip = new ListBuffer[ActorRef]
+        //car needs a color
+        if (!options.contains(CarOptions.CAR_COLOR_GRAY)) {
+          routeSlip += paintBlack
+        }
+        options.foreach {
+          case CarOptions.CAR_COLOR_GRAY  => routeSlip += paintGray
+          case CarOptions.NAVIGATION      => routeSlip += addNavigation
+          case CarOptions.PARKING_SENSORS => routeSlip += addParkingSensor
+          case other                      => //do nothing
+        }
+        routeSlip += endStep
+        routeSlip
+      }
 }
 

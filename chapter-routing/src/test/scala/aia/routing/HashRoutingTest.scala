@@ -96,5 +96,4 @@ class HashRoutingTest
       system.stop(router)
     }
   }
-
 }

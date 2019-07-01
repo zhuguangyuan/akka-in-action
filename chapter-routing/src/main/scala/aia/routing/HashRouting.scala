@@ -11,6 +11,11 @@ trait GatherMessage {
 
 case class GatherMessageNormalImpl(id: String, values: Seq[String]) extends GatherMessage
 
+/**
+  * 此class 重写了consistentHashKey，从而不用提供 mapping function
+  * @param id
+  * @param values
+  */
 case class GatherMessageWithHash(id: String, values: Seq[String]) extends GatherMessage with ConsistentHashable {
   override def consistentHashKey: Any = id
 }
@@ -26,7 +31,9 @@ class SimpleGather(nextStep: ActorRef) extends Actor {
           println("Joined: "+ msg.id + " by "+ self.path.name)
           messages -= msg.id
         }
-        case None => messages += msg.id -> msg
+        case None => {
+          messages += (msg.id -> msg)
+        }
       }
     }
   }

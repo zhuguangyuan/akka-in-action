@@ -21,12 +21,12 @@ class RouteSlipTest
 
       val minimalOrder = new Order(Seq())
       router ! minimalOrder
+
       val defaultCar = new Car(
         color = "black",
         hasNavigation = false,
         hasParkingSensors = false)
       probe.expectMsg(defaultCar)
-
 
 
       val fullOrder = new Order(Seq(
@@ -48,7 +48,6 @@ class RouteSlipTest
         hasNavigation = false,
         hasParkingSensors = true)
       probe.expectMsg(expectedCar)
-
     }
   }
 }
