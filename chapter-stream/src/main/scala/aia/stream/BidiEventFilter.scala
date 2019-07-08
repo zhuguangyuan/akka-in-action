@@ -17,6 +17,9 @@ import akka.util.ByteString
 import spray.json._
 import com.typesafe.config.{ Config, ConfigFactory }
 
+/**
+  * flow的组合 双向flow
+  */
 object BidiEventFilter extends App with EventMarshalling {
   val config = ConfigFactory.load() 
   val maxLine = config.getInt("log-stream-processor.max-line")
@@ -36,7 +39,11 @@ object BidiEventFilter extends App with EventMarshalling {
       System.exit(1)
   }
 
-
+  /**
+    * 将byteString => Event
+    * 如果以json形式提供，则解码之后再解析成json形式，然后转成Event
+    * 否则通过分隔符来进行切分转化
+    */
   val inFlow: Flow[ByteString, Event, NotUsed] = 
     if(args(0).toLowerCase == "json") {
       JsonFraming.objectScanner(maxJsonObject)
@@ -48,6 +55,11 @@ object BidiEventFilter extends App with EventMarshalling {
         .collect { case Some(event) => event }
     }
 
+  /**
+    * 将 Event => ByteString
+    * 如果要序列化成json,调用现有库直接转化
+    * 否则
+    */
   val outFlow: Flow[Event, ByteString, NotUsed] = 
     if(args(1).toLowerCase == "json") {
       Flow[Event].map(event => ByteString(event.toJson.compactPrint))
@@ -58,8 +70,7 @@ object BidiEventFilter extends App with EventMarshalling {
     }
   val bidiFlow = BidiFlow.fromFlows(inFlow, outFlow)
 
-    
-  val source: Source[ByteString, Future[IOResult]] = 
+  val source: Source[ByteString, Future[IOResult]] =
     FileIO.fromPath(inputFile)
 
   val sink: Sink[ByteString, Future[IOResult]] = 
@@ -68,10 +79,10 @@ object BidiEventFilter extends App with EventMarshalling {
 
   val filter: Flow[Event, Event, NotUsed] =   
     Flow[Event].filter(_.state == filterState)
-
+  // 组合
   val flow = bidiFlow.join(filter)
 
-
+  // 构成graph
   val runnableGraph: RunnableGraph[Future[IOResult]] = 
     source.via(flow).toMat(sink)(Keep.right)
 
