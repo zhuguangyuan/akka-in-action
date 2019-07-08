@@ -10,6 +10,9 @@ import akka.stream.scaladsl.{ Source, FileIO, Framing }
 
 import scala.concurrent.duration.FiniteDuration
 
+/**
+  * 定义基础event
+  */
 
 case class Event(
   host: String,

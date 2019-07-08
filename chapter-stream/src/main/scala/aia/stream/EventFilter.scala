@@ -15,6 +15,11 @@ import akka.util.ByteString
 import spray.json._
 import com.typesafe.config.{ Config, ConfigFactory }
 
+/**
+  * akka-stream的简单使用
+  * 过滤输入文件中的事件的状态，输出到目标文件
+  * 命令行参数：输入文件 输出文件 过滤事件的状态
+  */
 object EventFilter extends App with EventMarshalling {
   val config = ConfigFactory.load() 
   val maxLine = config.getInt("log-stream-processor.max-line")
@@ -42,7 +47,6 @@ object EventFilter extends App with EventMarshalling {
     FileIO.toPath(outputFile, Set(CREATE, WRITE, APPEND))
 
   // not used, just to show alternatively defining the entire flow
-
   val flow: Flow[ByteString, ByteString, NotUsed] =
     Framing.delimiter(ByteString("\n"), maxLine)
       .map(_.decodeString("UTF8"))
@@ -51,39 +55,28 @@ object EventFilter extends App with EventMarshalling {
       .filter(_.state == filterState)
       .map(event => ByteString(event.toJson.compactPrint))
 
-
-
   val frame: Flow[ByteString, String, NotUsed] =  
     Framing.delimiter(ByteString("\n"), maxLine)
       .map(_.decodeString("UTF8"))
-
-  
 
   val parse: Flow[String, Event, NotUsed] = 
     Flow[String].map(LogStreamProcessor.parseLineEx)
       .collect { case Some(e) => e }
 
-
-
   val filter: Flow[Event, Event, NotUsed] =   
     Flow[Event].filter(_.state == filterState)
 
-  
-
-  val serialize: Flow[Event, ByteString, NotUsed] =  
+  val serialize: Flow[Event, ByteString, NotUsed] =
     Flow[Event].map(event => ByteString(event.toJson.compactPrint))
 
-
-  implicit val system = ActorSystem() 
-  implicit val ec = system.dispatcher
-  implicit val materializer = ActorMaterializer()
-
-
-  val composedFlow: Flow[ByteString, ByteString, NotUsed] =  
+  val composedFlow: Flow[ByteString, ByteString, NotUsed] =
     frame.via(parse)
       .via(filter)
       .via(serialize)
 
+  implicit val system = ActorSystem()
+  implicit val ec = system.dispatcher
+  implicit val materializer = ActorMaterializer()
 
   val runnableGraph: RunnableGraph[Future[IOResult]] = 
     source.via(composedFlow).toMat(sink)(Keep.right)
@@ -92,5 +85,4 @@ object EventFilter extends App with EventMarshalling {
     println(s"Wrote ${result.count} bytes to '$outputFile'.")
     system.terminate()
   }  
-
 }

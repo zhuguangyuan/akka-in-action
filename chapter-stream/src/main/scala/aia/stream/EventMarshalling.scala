@@ -6,9 +6,14 @@ import java.time.format.{ DateTimeFormatter, DateTimeParseException }
 import scala.util.Try
 import spray.json._
 
+/**
+  * 提供几个实体的序列化和反序列化方式
+  */
 trait EventMarshalling extends DefaultJsonProtocol {
+
   implicit val dateTimeFormat = new JsonFormat[ZonedDateTime] {
-    def write(dateTime: ZonedDateTime) = JsString(dateTime.format(DateTimeFormatter.ISO_INSTANT))
+    def write(dateTime: ZonedDateTime) =
+      JsString(dateTime.format(DateTimeFormatter.ISO_INSTANT))
     def read(value: JsValue) = value match {
       case JsString(str) => 
         try {
@@ -25,7 +30,8 @@ trait EventMarshalling extends DefaultJsonProtocol {
   }
 
   implicit val stateFormat = new JsonFormat[State] {
-    def write(state: State) = JsString(State.norm(state))
+    def write(state: State) =
+      JsString(State.norm(state))
     def read(value: JsValue) = value match {
       case JsString("ok") => Ok
       case JsString("warning") => Warning
