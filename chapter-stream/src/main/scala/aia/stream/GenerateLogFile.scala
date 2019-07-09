@@ -1,21 +1,28 @@
 package aia.stream
 
-import java.nio.file.{ Path, Paths }
+import java.nio.file.{Path, Paths}
 import java.nio.file.StandardOpenOption
 import java.nio.file.StandardOpenOption._
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import scala.concurrent.Future
+import aia.stream.ContentNegLogsApp.config
 
+import scala.concurrent.Future
 import akka.actor.ActorSystem
-import akka.stream.{ ActorMaterializer, IOResult }
+import akka.stream.{ActorMaterializer, IOResult}
 import akka.stream.scaladsl._
 import akka.util.ByteString
+import com.typesafe.config.ConfigFactory
 
 object GenerateLogFile extends App {
-  val filePath = args(0)
-  val numberOfLines = args(1).toInt
+  //  val filePath = args(0)
+  //  val numberOfLines = args(1).toInt
+
+  val config = ConfigFactory.load()
+  val filePath = config.getString("log-paths.generatePath")
+  val numberOfLines = config.getString("log-paths.numberOfLines").toInt
+
   val rnd = new java.util.Random()
   val sink = FileIO.toPath(FileArg.shellExpanded(filePath), Set(CREATE, WRITE, APPEND))
   def line(i: Int) = {
@@ -32,9 +39,12 @@ object GenerateLogFile extends App {
     s"$host | $service | $state | $time | $description | $tag | $metric \n"
   }
 
-  val graph = Source.fromIterator{() => 
-    Iterator.tabulate(numberOfLines)(line)
-  }.map(l=> ByteString(l)).toMat(sink)(Keep.right)
+  val graph = Source
+          .fromIterator{() => 
+            Iterator.tabulate(numberOfLines)(line)}
+          .map(l=> 
+            ByteString(l))
+          .toMat(sink)(Keep.right)
 
   implicit val system = ActorSystem() 
   implicit val ec = system.dispatcher

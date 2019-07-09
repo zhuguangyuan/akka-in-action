@@ -1,19 +1,15 @@
 package aia.stream
 
-import java.nio.file.{ Path, Paths }
-import java.nio.file.StandardOpenOption
+import java.nio.file.{FileSystems, Path, Paths, StandardOpenOption}
 import java.nio.file.StandardOpenOption._
 
-
 import scala.concurrent.Future
-
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.{ ActorMaterializer, IOResult }
+import akka.stream.{ActorMaterializer, IOResult}
 import akka.util.ByteString
-
 import spray.json._
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 
 /**
   * akka-stream的简单使用
@@ -24,20 +20,23 @@ object EventFilter extends App with EventMarshalling {
   val config = ConfigFactory.load() 
   val maxLine = config.getInt("log-stream-processor.max-line")
   
-  if(args.length != 3) {
-    System.err.println("Provide args: input-file output-file state")
-    System.exit(1)
-  }
-  
-  val inputFile = FileArg.shellExpanded(args(0))
-  val outputFile = FileArg.shellExpanded(args(1))
+//  if(args.length != 3) {
+//    System.err.println("Provide args: input-file output-file state")
+//    System.exit(1)
+//  }
+//  val inputFile = FileArg.shellExpanded(args(0))
+//  val outputFile = FileArg.shellExpanded(args(1))
+//  val filterState = args(2) match {
+//    case State(state) => state
+//    case unknown =>
+//      System.err.println(s"Unknown state $unknown, exiting.")
+//      System.exit(1)
+//  }
 
-  val filterState = args(2) match {
-    case State(state) => state
-    case unknown => 
-      System.err.println(s"Unknown state $unknown, exiting.") 
-      System.exit(1)
-  }
+    val inputFile = FileArg.shellExpanded(config.getString("log-paths.inputFile-EventFilter"))
+    val outputFile = FileArg.shellExpanded(config.getString("log-paths.outputFile-EventFilter"))
+    val filterState = config.getString("log-paths.state")
+
   import akka.stream.scaladsl._
 
   val source: Source[ByteString, Future[IOResult]] = 
@@ -52,7 +51,7 @@ object EventFilter extends App with EventMarshalling {
       .map(_.decodeString("UTF8"))
       .map(LogStreamProcessor.parseLineEx)
       .collect { case Some(e) => e }
-      .filter(_.state == filterState)
+      .filter(_.state == State.unapply(filterState).get)
       .map(event => ByteString(event.toJson.compactPrint))
 
   val frame: Flow[ByteString, String, NotUsed] =  
@@ -64,10 +63,11 @@ object EventFilter extends App with EventMarshalling {
       .collect { case Some(e) => e }
 
   val filter: Flow[Event, Event, NotUsed] =   
-    Flow[Event].filter(_.state == filterState)
+    Flow[Event].filter(_.state == State.unapply(filterState).get) //(_.state == filterState)
+
 
   val serialize: Flow[Event, ByteString, NotUsed] =
-    Flow[Event].map(event => ByteString(event.toJson.compactPrint))
+    Flow[Event].map(event => ByteString(event.toJson.prettyPrint))
 
   val composedFlow: Flow[ByteString, ByteString, NotUsed] =
     frame.via(parse)
