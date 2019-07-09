@@ -36,9 +36,10 @@ class ContentNegLogsApi(
 ) extends EventMarshalling {
   def logFile(id: String) = logsDir.resolve(id)
   
-  val outFlow = Flow[Event].map { event => 
-    ByteString(event.toJson.compactPrint)
-  }
+//  val outFlow = Flow[Event].map { event =>
+//    ByteString(event.toJson.compactPrint)
+//  }
+  val outFlow = Flow[Event].map(event => ByteString(event.toJson.compactPrint))
   
   def logFileSource(logId: String) = 
     FileIO.fromPath(logFile(logId))
@@ -90,7 +91,7 @@ class ContentNegLogsApi(
           extractRequest { req =>
             if(Files.exists(logFile(logId))) {
               val src = logFileSource(logId) 
-              complete(Marshal(src).toResponseFor(req))
+              complete(Marshal(src).toResponseFor(req))// 为req生成response
             } else {
               complete(StatusCodes.NotFound)
             }

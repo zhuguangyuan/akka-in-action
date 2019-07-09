@@ -36,12 +36,13 @@ object ContentNegLogsApp extends App {
     case _: LogStreamProcessor.LogParseException => Supervision.Stop
     case _                    => Supervision.Stop
   }
-  
   implicit val materializer = ActorMaterializer(
    ActorMaterializerSettings(system)
-     .withSupervisionStrategy(decider)
+     .withSupervisionStrategy(decider) // 处理失败时的容错策略
   )
-  
+
+  // maxLine: The maximum length of allowed frames while decoding. If the maximum length is
+  // exceeded this Flow will fail the stream.
   val api = new ContentNegLogsApi(logsDir, maxLine, maxJsObject).routes
  
   val bindingFuture: Future[ServerBinding] =

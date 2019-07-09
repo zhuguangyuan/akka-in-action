@@ -27,6 +27,11 @@ import spray.json._
 object LogJson extends EventMarshalling 
     with NotificationMarshalling 
     with MetricMarshalling {
+  /**
+    * 将 ByteString形式的 text 转化为 Event 的flow
+    * @param maxLine
+    * @return
+    */
   def textInFlow(maxLine: Int) = {
     Framing.delimiter(ByteString("\n"), maxLine)
     .map(_.decodeString("UTF8"))
@@ -34,13 +39,18 @@ object LogJson extends EventMarshalling
     .collect { case Some(e) => e }
   }
 
+  /**
+    * 将 ByteString形式的 json 转化为 Event 的flow
+    * @param maxJsonObject
+    * @return
+    */
   def jsonInFlow(maxJsonObject: Int) = {
     JsonFraming.objectScanner(maxJsonObject) 
       .map(_.decodeString("UTF8").parseJson.convertTo[Event])
   }
 
   def jsonFramed(maxJsonObject: Int) =
-    JsonFraming.objectScanner(maxJsonObject) 
+    JsonFraming.objectScanner(maxJsonObject)
 
   val jsonOutFlow = Flow[Event].map { event => 
     ByteString(event.toJson.compactPrint)
